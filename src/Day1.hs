@@ -1,57 +1,32 @@
-module Day1 (findDigits, joinDigits, parseDigit, part1, part2, run) where
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
-import Control.Applicative ((<|>))
-import Control.Monad (msum)
-import Data.List (elemIndex, find, isPrefixOf, tails)
+module Day1 (histogram, parseLists, parseNumbers, part1, part2, run) where
 
-digits :: [String]
-digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+import Data.List (sort, transpose)
+import Data.List.Split (dropBlanks, dropDelims, oneOf, split)
+import Data.Map (Map, empty, findWithDefault, insertWith)
 
-numbers :: [String]
-numbers =
-  [ "zero"
-  , "one"
-  , "two"
-  , "three"
-  , "four"
-  , "five"
-  , "six"
-  , "seven"
-  , "eight"
-  , "nine"
-  ]
+parseNumbers :: String -> [Int]
+parseNumbers s = map read $ split (dropBlanks . dropDelims $ oneOf " ") s
 
-parseDigit :: String -> Maybe Int
-parseDigit s = elemIndex s digits <|> elemIndex s numbers
+parseLists :: String -> [[Int]]
+parseLists s = transpose $ map parseNumbers $ lines s
 
-findPrefixes :: [String] -> String -> [Maybe String]
-findPrefixes prefixes s = map findPrefix $ tails s
+histogram :: [Int] -> Map Int Int
+histogram ns = foldr (\n m -> insertWith (+) n 1 m) empty ns
+
+part1 :: String -> Int
+part1 s = sum $ zipWith f as bs
   where
-    findPrefix x = find (`isPrefixOf` x) prefixes
+    [as, bs] = map sort $ parseLists s
+    f a b = abs $ a - b
 
-findDigits :: [String] -> String -> Maybe (String, String)
-findDigits prefixes s = do
-  a <- msum $ findPrefixes prefixes s
-  b <- msum $ reverse $ findPrefixes prefixes s
-  return (a, b)
-
-joinDigits :: (String, String) -> Maybe Int
-joinDigits (a, b) = do
-  a_ <- parseDigit a
-  b_ <- parseDigit b
-  return $ read (show a_ ++ show b_)
-
-sumLines :: [String] -> [String] -> Maybe Int
-sumLines prefixes text = do
-  as <- mapM (findDigits prefixes) text
-  bs <- mapM joinDigits as
-  return $ sum bs
-
-part1 :: String -> Maybe Int
-part1 text = sumLines digits $ lines text
-
-part2 :: String -> Maybe Int
-part2 text = sumLines (digits ++ numbers) (lines text)
+part2 :: String -> Int
+part2 s = sum $ map f as
+  where
+    [as, bs] = parseLists s
+    f a = a * lookup a
+    lookup a = findWithDefault 0 a $ histogram bs
 
 run :: IO ()
 run = do
