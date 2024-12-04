@@ -16,9 +16,9 @@ spec = do
     it "parses two numbers" $ do
       parseLists "1 2\n3 4" `shouldBe` [[1, 3], [2, 4]]
 
-  describe "hist" $ do
+  describe "histogram" $ do
     it "calculates frequencies of elements" $ do
-      hist [1, 1, 2, 2, 3, 1] `shouldBe` fromList [(1, 3), (2, 2), (3, 1)]
+      histogram [1, 1, 2, 2, 3, 1] `shouldBe` fromList [(1, 3), (2, 2), (3, 1)]
 
   describe "part1" $ do
     it "calculates the result" $ do
